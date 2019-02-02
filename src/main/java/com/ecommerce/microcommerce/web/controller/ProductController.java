@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Api( description="API pour es opérations CRUD sur les produits.")
@@ -27,11 +30,9 @@ public class ProductController {
     @Autowired
     private ProductDao productDao;
 
-
     //Récupérer la liste des produits
-
+    @ApiOperation(value = "Liste tous les produits en stock")
     @RequestMapping(value = "/Produits", method = RequestMethod.GET)
-
     public MappingJacksonValue listeProduits() {
 
         Iterable<Product> produits = productDao.findAll();
@@ -47,11 +48,9 @@ public class ProductController {
         return produitsFiltres;
     }
 
-
     //Récupérer un produit par son Id
     @ApiOperation(value = "Récupère un produit grâce à son ID à condition que celui-ci soit en stock!")
     @GetMapping(value = "/Produits/{id}")
-
     public Product afficherUnProduit(@PathVariable int id) {
 
         Product produit = productDao.findById(id);
@@ -61,12 +60,9 @@ public class ProductController {
         return produit;
     }
 
-
-
-
     //ajouter un produit
+    @ApiOperation(value = "Ajoute un produit dans le stock")
     @PostMapping(value = "/Produits")
-
     public ResponseEntity<Void> ajouterProduit(@Valid @RequestBody Product product) {
 
         Product productAdded =  productDao.save(product);
@@ -83,18 +79,32 @@ public class ProductController {
         return ResponseEntity.created(location).build();
     }
 
+    @ApiOperation(value = "Supprime un produit du stock")
     @DeleteMapping (value = "/Produits/{id}")
     public void supprimerProduit(@PathVariable int id) {
 
         productDao.delete(id);
     }
 
+    @ApiOperation(value = "Met à jour un produit dans le stock")
     @PutMapping (value = "/Produits")
     public void updateProduit(@RequestBody Product product) {
 
         productDao.save(product);
     }
 
+    @ApiOperation(value = "Liste tous les produits en stock et affiche leur marge")
+    @GetMapping(value = "/AdminProduits")
+    public ResponseEntity<?> calculerMargeProduit() {
+        Iterable<Product> produits = productDao.findAll();
+        Map<String, Integer> result = new HashMap<>();
+        if (produits != null){
+            for (Product produit: produits) {
+                result.put(produit.toString(), produit.getMarge());
+            }
+        }
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 
     //Pour les tests
     @GetMapping(value = "test/produits/{prix}")

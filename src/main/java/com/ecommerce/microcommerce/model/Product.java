@@ -69,11 +69,15 @@ public class Product {
         this.prixAchat = prixAchat;
     }
 
+    public int getMarge() {
+        return this.getPrix() - this.getPrixAchat();
+    }
+
     @Override
     public String toString() {
         return "Product{" +
                 "id=" + id +
-                ", nom='" + nom + '\'' +
+                ", nom='" + nom + "'" +
                 ", prix=" + prix +
                 '}';
     }
